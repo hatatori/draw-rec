@@ -63,7 +63,7 @@
 
 			if(btplay == 1){
 				
-				mouse.pos(timeline.value)
+				// mouse.pos(timeline.value)
 
 				if(timeline.value == timeline.max-1){
 					btplay = 0
@@ -345,6 +345,8 @@ window.onkeyup=function(e){
 			timeline.value = audio.currentTime*timeline.max/audio.duration
 			
 			desfazerTempo(timeline.value)
+
+			// mouse.pos(timeline.value)
 
 		},0)
 
