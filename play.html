@@ -21,11 +21,18 @@
 
 
 <span class='flex' id="bloco">
-	<button onclick="videoplay(1);audio.play()">play</button>
-	<button onclick="videoplay(0);audio.pause()">pause</button>
+	<button id="btplay" onclick="videoplay(1);audio.play()">play</button>
+	<button id="btpause" onclick="videoplay(0);audio.pause()">pause</button>
+
 	<audio id="audio" src=""></audio>
 
-	<input id="timeline" type="range" name="" min=0 max=0 onclick="sincroniza(this.value)" onmousemove="desfazerTempo(this.value); sincroniza(this.value)" onchange="desfazerTempo(this.value)" onmouseup="sincroniza2()" >
+	<!-- <input id="timeline" type="range" name="" min=0 max=0 onclick="sincroniza(this.value)" onmousemove="desfazerTempo(this.value); sincroniza(this.value)" onchange="desfazerTempo(this.value)" onmouseup="sincroniza2()" > -->
+
+	<input id="timeline" type="range" name="" min=0 max=0 
+	onclick="desfazerTempo(this.value); sincroniza(this.value);"
+	onmousemove="desfazerTempo(this.value); sincroniza(this.value);" 
+	onchange="desfazerTempo(this.value); sincroniza(this.value);" 
+	>
 
 	
 </span>
@@ -56,8 +63,10 @@
 
 				mouse.pos(timeline.value)
 
-				if(timeline.value == timeline.max-1)
+				if(timeline.value == timeline.max-1){
 					btplay = 0
+					timeline.value = 0
+				}
 
 				if(audio.paused == true){
 					audio.play()
@@ -195,6 +204,8 @@ window.onkeyup=function(e){
 			if(e.key == "-") tamanho_pincel--;
 			if(e.key == "f") fullScreen();
 			if(e.key == "\'") btplay = (btplay==1) ? 0 :  1;
+			if(e.key == " ") btplay = (btplay==1) ? 0 :  1;
+			if(e.key == " ") audio.paused = (!audio.paused) ? audio.pause() :  audio.play();
 
 			
 
@@ -294,26 +305,16 @@ window.onkeyup=function(e){
 		onmouseup = () => { dg = false }
 
 
-		function sincroniza(valor){
-				if(dg){
-					audio.currentTime = parseInt(valor) * audio.duration / parseInt(timeline.max)
-
-					// if(btplay==1 && audio.paused)
-					// 	audio.play()
-				}
-			}
 
 		fim = 0
-		function sincroniza2(){
-
-			if(fim==0){
-				audio.currentTime=9000
-				audio.play()
-				fim++
-			}
-
-			audio.currentTime = parseInt(valor) * audio.duration / parseInt(timeline.max)
+		if(fim==0){
+			audio.currentTime=9000
+			audio.play()
+			fim++
 		}
+
+		function sincroniza(valor){ audio.currentTime = parseInt(valor) * audio.duration / parseInt(timeline.max) }
+		function sincroniza2(){ audio.currentTime = parseInt(valor) * audio.duration / parseInt(timeline.max) }
 
 		//baixa
 		function fileDown(){
