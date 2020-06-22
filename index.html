@@ -1,0 +1,241 @@
+<style>
+	*{
+		/*cursor: url('pencil.svg'), auto*/;transition: 0.05s;	
+		width: 100%;
+		margin: 0;
+		padding: 0
+	}
+	body{text-align: center;}
+	#cursor{transition: 0.05s;}
+	#timeline{width: 100%}
+	.quadrado{width: 20;height: 20;margin: 5;display: inline-block; border: 1px solid black }
+
+	input[type="radio"]{display: none}
+	input[type="radio"]:checked+div{border: solid 1px black; margin: 2;padding: 2}
+
+	input[type="range"]{position: fixed;bottom: 0%;left: 0px;z-index: 1}
+
+</style>
+
+
+
+<button onclick="videoplay(1)">play</button>
+<button onclick="videoplay(0)">pause</button>
+<button onclick="Clear()">limpar</button>
+
+<input id="timeline" type="range" name="" min=0 max=0 onmousemove="desfazerTempo(this.value)" onchange="desfazerTempo(this.value)">
+
+<label><input type="radio" name="cr" checked><div class="quadrado" style="background-color: black" onclick="lineColor(0)"></div></label>
+
+<label>
+	<input type="radio" name="cr"><div class="quadrado" style="background-color: #2980b9" onclick="lineColor(1)">
+	</div>
+</label>
+
+<label>
+	<input type="radio" name="cr"><div class="quadrado" style="background-color: orangered" onclick="lineColor(2)">
+	</div>
+</label>
+
+<label>
+	<input type="radio" name="cr"><div class="quadrado" onclick="lineColor(3)"></div></label>
+
+	<br>
+
+	<div style="position: relative;">
+		<img id="cursor" src='cursor2.svg' style="position:absolute; width: 45">
+		<canvas id="myCanvas" width="1920" height="1080" style="border:1px solid #000000;"></canvas>
+	</div>
+
+	<script>
+
+		// botoes
+
+		btplay = 0
+
+		function videoplay(n){
+			btplay = n
+		}
+
+		setInterval(()=>{
+
+			if(btplay == 1){
+				timeline.value++
+
+				mouse.pos(timeline.value)
+
+				if(timeline.value == timeline.max-1)
+					btplay = 0
+			}else{
+				btplay = 0
+			}
+
+		},0)
+
+	//cor tamanho 
+	cor = 'black'
+	tamanho_pincel = 2
+
+	// cores
+	numero_cor = 0
+	cores = ['black','#2980b9','orangered','white'] //black blue orangered
+
+
+	// quadro
+	ctx = myCanvas.getContext('2d')
+	ctx.fillStyle = cores[3];
+	console.log(ctx)
+	ctx.fillRect(0, 0, 1920, 1080); //x y w h
+
+	// circulo
+	function line(x0,y0,x1,y1){ 
+		ctx.beginPath();
+		ctx.strokeStyle = cor
+		ctx.moveTo(x0, y0);
+		ctx.lineTo(x1, y1);
+		ctx.lineWidth = tamanho_pincel
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+	function lineColor(num){cor = cores[num]}
+	function lineSize(tamanho_pincel){tamanho_pincel = tamanho_pincel}
+
+	function pixel(x,y){
+		ctx.beginPath();
+		ctx.fillStyle = cor
+		ctx.fillRect(x, y, 1, 1);
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+	function Clear(){ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, 1920, 1080);}
+	
+
+	movimento = []
+
+	mouse = {
+
+		history:[],
+		ar:[],
+
+		move:function(x,y){ cursor.style.transform="translate("+(x-16)+"px,"+(y-11)+"px)" },
+
+		// b = botão [0,1] ; c = cor [1,2,3,4]
+		add:function(x,y,b,c){ this.history.push({x,y,b,c}) ; this.ar.push(x+","+y+","+b+","+c) },
+
+		pos(n){
+
+			this.move(this.history[n].x,this.history[n].y)
+
+			// cor = cores[this.history[n].c]
+			// lineColor(this.history[n].c)
+
+			if(this.history[n].b == 1){
+				try{
+					cor = cores[this.history[n].c]
+					line(this.history[n].x,this.history[n].y,this.history[n-1].x,this.history[n-1].y)
+				}catch(e){}
+			}
+		}
+
+	}
+
+	function desfazerTempo(tempo){
+		Clear();
+		for(i=0;i<tempo;i++) mouse.pos(i)
+	}
+
+
+flag = false
+
+function recordMouse(flag){
+	if(flag){
+		s = setInterval(e=>{
+			mouse.add(mouse.x, mouse.y, mouse.b, numero_cor)
+			timeline.max = mouse.history.length-1
+		},0)
+	}else{
+		clearInterval(s)
+	}
+}
+
+fullScreen = e =>{
+	myCanvas.style.width="100%"
+	myCanvas.style.height="100%"
+}
+
+myCanvas.onmousemove=function(e){
+
+	try{
+		x0 = mouse.x
+		y0 = mouse.y
+	}catch(e){
+		x0 = 0
+		y0 = 0
+	}
+
+	mouse.x = e.offsetX
+	mouse.y = e.offsetY
+	mouse.b = e.buttons
+
+
+
+	if(mouse.b)
+		line(x0,y0,mouse.x,mouse.y)
+}	
+
+window.onclick=function(){pixel(mouse.x,mouse.y)}
+
+window.onkeyup=function(e){
+	if(e.key == "1") recordMouse(true); 
+	if(e.key == "2") recordMouse(false); 
+			// if(e.key == "3") mouse.play() ; 
+			if(e.key == "+") tamanho_pincel++;
+			if(e.key == "-") tamanho_pincel--;
+			if(e.key == "f") fullScreen();
+
+			// switch(e.key){
+			// 	case 'z': cor = cores[0]; $$('.quadrado')[0].click(); numero_cor = 0 ; break;
+			// 	case 'x': cor = cores[1]; $$('.quadrado')[1].click(); numero_cor = 1 ; break;
+			// 	case 'c': cor = cores[2]; $$('.quadrado')[2].click(); numero_cor = 2 ; break;
+			// 	case 'v': cor = cores[3]; $$('.quadrado')[3].click(); numero_cor = 3 ; break;
+			// }
+
+			switch(e.key){
+				case 'z': numero_cor = 0 ; break
+				case 'x': numero_cor = 1 ; break
+				case 'c': numero_cor = 2 ; break
+				case 'v': numero_cor = 3 ; break
+			}
+
+			cor = cores[numero_cor]; $$('.quadrado')[numero_cor].click()
+
+
+		}
+
+		function $$(e){return document.querySelectorAll(e)}
+
+		//carrega arquivo
+		file = window.location.hash.substring(1)+".txt"
+
+		fetch(file).then(e=>e.text().then(e=>{
+
+			el = e.split(' ')
+			
+			
+
+			for(i of el){
+				k = i.split(',').map(e=>parseInt(e))
+				ob = {x:k[0],y:k[1],b:k[2],c:k[3]}
+				mouse.history.push(ob)
+				if(mouse.history.length == el.length)
+					timeline.max = mouse.history.length
+			}
+		}))
+
+		
+
+
+
+	</script>
