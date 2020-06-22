@@ -1,0 +1,336 @@
+<style>
+	*{
+		/*cursor: url('pencil.svg'), auto*/;transition: 0.05s;	
+		/*width: 100%;*/
+		margin: 0;
+		padding: 0;
+
+		outline: none
+	}
+	body{text-align: center;}
+	#cursor{transition: 0.05s;}
+	#timeline{width: 100%}
+	.quadrado{width: 20;height: 20;margin: 5;display: inline-block; border: 1px solid black }
+
+	input[type="radio"]{display: none}
+	input[type="radio"]:checked+div{border: solid 1px black; margin: 2;padding: 2}
+	.flex{display: flex;width: 100%;position: fixed;z-index: 2;bottom: 0}
+	.flex button{margin: 5;padding: 5}
+	audio{display: none}
+</style>
+
+
+<span class='flex' id="bloco">
+	<button onclick="videoplay(1);audio.play()">play</button>
+	<button onclick="videoplay(0);audio.pause()">pause</button>
+	<audio id="audio" src=""></audio>
+
+	<input id="timeline" type="range" name="" min=0 max=0 onclick="sincroniza(this.value)" onmousemove="desfazerTempo(this.value); sincroniza(this.value)" onchange="desfazerTempo(this.value)" onmouseup="sincroniza2()" >
+
+	
+</span>
+
+<br>
+
+<div style="position: relative;">
+	<img id="cursor" src='cursor2.svg' style="position:absolute; width: 45">
+	<canvas id="myCanvas" width="1000" height="600" style="border:1px solid #000000;"></canvas>
+</div>
+
+<script>
+
+		// botoes
+
+		btplay = 0
+
+		function videoplay(n){
+			btplay = n
+		}
+
+
+		aux = 0
+		setInterval(()=>{
+
+			if(btplay == 1){
+				timeline.value++
+
+				mouse.pos(timeline.value)
+
+				if(timeline.value == timeline.max-1)
+					btplay = 0
+
+				if(audio.paused == true){
+					audio.play()
+					console.log("ok")
+				}
+
+			}else{
+				btplay = 0
+			}
+
+		},0)
+
+	//cor tamanho 
+	cor = 'black'
+	tamanho_pincel = 2
+
+	// cores
+	numero_cor = 0
+	cores = ['black','#2980b9','orangered','white'] //black blue orangered
+
+
+	// quadro
+	ctx = myCanvas.getContext('2d')
+	ctx.fillStyle = cores[3];
+	console.log(ctx)
+	ctx.fillRect(0, 0, 1920, 1080); //x y w h
+
+	// circulo
+	function line(x0,y0,x1,y1){ 
+		ctx.beginPath();
+		ctx.strokeStyle = cor
+		ctx.moveTo(x0, y0);
+		ctx.lineTo(x1, y1);
+		ctx.lineWidth = tamanho_pincel
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+	function lineColor(num){cor = cores[num]}
+	function lineSize(tamanho_pincel){tamanho_pincel = tamanho_pincel}
+
+	function pixel(x,y){
+		ctx.beginPath();
+		ctx.fillStyle = cor
+		ctx.fillRect(x, y, 1, 1);
+		ctx.stroke();
+		ctx.closePath();
+	}
+
+	function Clear(){ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, 1920, 1080);}
+	
+
+	movimento = []
+
+	mouse = {
+
+		history:[],
+		ar:[],
+
+		move:function(x,y){ cursor.style.transform="translate("+(x-16)+"px,"+(y-11)+"px)" },
+
+		// b = botão [0,1] ; c = cor [1,2,3,4]
+		add:function(x,y,b,c){ this.history.push({x,y,b,c}) ; this.ar.push(x+","+y+","+b+","+c) },
+
+		pos(n){
+
+			this.move(this.history[n].x,this.history[n].y)
+
+			// cor = cores[this.history[n].c]
+			// lineColor(this.history[n].c)
+
+			if(this.history[n].b == 1){
+				try{
+					cor = cores[this.history[n].c]
+					line(this.history[n].x,this.history[n].y,this.history[n-1].x,this.history[n-1].y)
+				}catch(e){}
+			}
+		}
+
+	}
+
+	function desfazerTempo(tempo){
+		Clear();
+		for(i=0;i<tempo;i++) mouse.pos(i)
+	}
+
+
+flag = false
+
+function recordMouse(flag){
+	if(flag){
+		s = setInterval(e=>{
+
+
+			mouse.add(mouse.x, mouse.y, mouse.b, numero_cor)
+			timeline.max = mouse.history.length-1
+		},0)
+	}else{
+		clearInterval(s)
+	}
+}
+
+fullScreen = e =>{
+	myCanvas.style.width="100%"
+	myCanvas.style.height="100%"
+}
+
+myCanvas.onmousemove=function(e){
+
+	try{
+		x0 = mouse.x
+		y0 = mouse.y
+	}catch(e){
+		x0 = 0
+		y0 = 0
+	}
+
+	mouse.x = e.offsetX
+	mouse.y = e.offsetY
+	mouse.b = e.buttons
+
+
+
+	if(mouse.b)
+		line(x0,y0,mouse.x,mouse.y)
+}	
+
+window.onclick=function(){pixel(mouse.x,mouse.y)}
+
+window.onkeyup=function(e){
+	if(e.key == "1") recordMouse(true); 
+	if(e.key == "2") recordMouse(false); 
+			// if(e.key == "3") mouse.play() ; 
+			if(e.key == "+") tamanho_pincel++;
+			if(e.key == "-") tamanho_pincel--;
+			if(e.key == "f") fullScreen();
+			if(e.key == "\'") btplay = (btplay==1) ? 0 :  1;
+
+			
+
+			// switch(e.key){
+			// 	case 'z': cor = cores[0]; $$('.quadrado')[0].click(); numero_cor = 0 ; break;
+			// 	case 'x': cor = cores[1]; $$('.quadrado')[1].click(); numero_cor = 1 ; break;
+			// 	case 'c': cor = cores[2]; $$('.quadrado')[2].click(); numero_cor = 2 ; break;
+			// 	case 'v': cor = cores[3]; $$('.quadrado')[3].click(); numero_cor = 3 ; break;
+			// }
+
+			switch(e.key){
+				case 'z': numero_cor = 0 ; break
+				case 'x': numero_cor = 1 ; break
+				case 'c': numero_cor = 2 ; break
+				case 'v': numero_cor = 3 ; break
+			}
+
+			cor = cores[numero_cor]; $$('.quadrado')[numero_cor].click()
+
+
+		}
+
+		function $$(e){return document.querySelectorAll(e)}
+
+		//carrega arquivo
+		file = window.location.hash.substring(1)
+		audio.src = file+".wma"
+
+		fetch(file+'.txt').then(e=>e.text().then(e=>{
+
+			el = e.split(' ')
+			
+			
+
+			for(i of el){
+				k = i.split(',').map(e=>parseInt(e))
+				ob = {x:k[0],y:k[1],b:k[2],c:k[3]}
+				mouse.history.push(ob)
+				if(mouse.history.length == el.length)
+					timeline.max = mouse.history.length
+			}
+		}))
+
+
+		//gravar audio
+		
+		// numero = 0
+		
+		function gravarAudio(){
+			
+			numero = typeof(numero) == 'undefined' || numero == 0 ? 1 : 0
+
+			console.log(numero)
+
+			
+			numero == 0 ? mediaRecorder.stop() : null
+			numero == 1 ? recordMouse(true) : recordMouse(false)
+
+
+
+			navigator.mediaDevices.getUserMedia({audio:true})
+			.then(stream => {
+				mediaRecorder = new MediaRecorder(stream)
+				mediaRecorder.start()
+				chuck = []
+
+				mediaRecorder.addEventListener('dataavailable',e=>{
+					chuck.push(e.data)
+				})
+
+				mediaRecorder.addEventListener('stop', e=>{
+					
+					blob = new Blob(chuck,{type:'audio/wma'})
+					audio_url = URL.createObjectURL(blob)
+
+					audio = new Audio(audio_url)
+					
+					audio.style.width=600
+					audio.setAttribute("controls",1)
+
+					bloco.appendChild(audio)
+
+					if(!audio.paused)
+						audio.play()
+
+					videoplay(1)
+
+					
+				})
+			})
+		}
+		
+
+		dg = false
+
+		onmousedown = () => { dg = true }
+		onmouseup = () => { dg = false }
+
+
+		function sincroniza(valor){
+				if(dg){
+					audio.currentTime = parseInt(valor) * audio.duration / parseInt(timeline.max)
+
+					// if(btplay==1 && audio.paused)
+					// 	audio.play()
+				}
+			}
+
+		fim = 0
+		function sincroniza2(){
+
+			if(fim==0){
+				audio.currentTime=9000
+				audio.play()
+				fim++
+			}
+
+			audio.currentTime = parseInt(valor) * audio.duration / parseInt(timeline.max)
+		}
+
+		//baixa
+		function fileDown(){
+
+			text = mouse.ar.join(" ")
+			blob = new Blob([text], {type: "text/plain"});
+			url = window.URL.createObjectURL(blob);
+			a = document.createElement("a");
+			a.href = url;
+			a.download = 'ok.txt';  
+			a.click();
+
+			a.href = audio_url;
+			a.download = 'ok.wma';  
+			a.click();
+		}
+
+
+
+	</script>
