@@ -60,7 +60,7 @@
 
 		aux = 0
 		setInterval(()=>{
-			
+
 			if(btplay == 1){
 				timeline.value++
 
@@ -75,7 +75,6 @@
 					audio.play()
 					console.log("ok")
 				}
-
 			}else{
 				btplay = 0
 			}
@@ -337,17 +336,17 @@ window.onkeyup=function(e){
 		}
 
 
-		// audio.ontimeupdate=function(e){
+		audio.ontimeupdate=function(e){
 			
-		// 	if(this.currentTime == this.duration){
-		// 		this.currentTime = 0
-		// 		this.pause()
-		// 	}
+			if(this.currentTime == this.duration){
+				this.currentTime = 0
+				this.pause()
+			}
 
-		// 	timeline.value = this.currentTime*timeline.max/this.duration
+			timeline.value = this.currentTime*timeline.max/this.duration
 
-		// 	console.log(this.currentTime)
-		// }
+			desfazerTempo(timeline.value)
+		}
 		
 
 
