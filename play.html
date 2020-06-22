@@ -62,8 +62,7 @@
 		setInterval(()=>{
 
 			if(btplay == 1){
-				timeline.value++
-
+				
 				mouse.pos(timeline.value)
 
 				if(timeline.value == timeline.max-1){
@@ -336,19 +335,18 @@ window.onkeyup=function(e){
 		}
 
 
-		audio.ontimeupdate=function(e){
-			
-			if(this.currentTime == this.duration){
-				this.currentTime = 0
-				this.pause()
+		// atualização
+		setInterval(function(){
+			if(audio.currentTime == audio.duration){
+				audio.currentTime = 0
+				audio.pause()
 			}
 
-			timeline.value = this.currentTime*timeline.max/this.duration
-
+			timeline.value = audio.currentTime*timeline.max/audio.duration
+			
 			desfazerTempo(timeline.value)
-		}
-		
 
+		},0)
 
 
 
