@@ -146,6 +146,11 @@ function recordMouse(flag){
 }
 
 
+var drag = false
+
+myCanvas.onmousedown=function(e){ drag = true ; console.log(drag) }
+myCanvas.onmouseup=function(e){ drag = false ; console.log(drag) }
+
 myCanvas.onmousemove=function(e){
 
 	try{
@@ -161,9 +166,10 @@ myCanvas.onmousemove=function(e){
 	mouse.b = e.buttons
 
 
-
-	if(mouse.b)
+	if(drag)
 		line2(x0,y0,mouse.x,mouse.y)
+
+	// console.log(x0+" - "+y0+" : "+mouse.x+" - "+mouse.y)
 }	
 
 window.onclick=function(){pixel(mouse.x,mouse.y)}
@@ -199,20 +205,22 @@ window.onkeyup=function(e){
 		//carrega arquivo
 		file = window.location.hash.substring(1)
 		file = file.split("#")[0]	
-		audio.src = file+".wma"
 
-		fetch(file+'.txt').then(e=>e.text().then(e=>{
+		if(file!=""){
+			audio.src = file+".wma"
+			fetch(file+'.txt').then(e=>e.text().then(e=>{
 
-			el = e.split(' ')
+				el = e.split(' ')
 
-			for(i of el){
-				k = i.split(',').map(e=>parseInt(e))
-				ob = {x:k[0],y:k[1],b:k[2],c:k[3]}
-				mouse.history.push(ob)
-				if(mouse.history.length == el.length)
-					timeline.max = mouse.history.length
-			}
-		}))
+				for(i of el){
+					k = i.split(',').map(e=>parseInt(e))
+					ob = {x:k[0],y:k[1],b:k[2],c:k[3]}
+					mouse.history.push(ob)
+					if(mouse.history.length == el.length)
+						timeline.max = mouse.history.length
+				}
+			}))
+		}
 
 
 		//gravar audio
@@ -228,7 +236,7 @@ window.onkeyup=function(e){
 			
 			numero%2==1 ? recordMouse(true) : recordMouse(false)
 
-			console.log(numero)
+			// console.log(numero)
 
 			// numero == 0 ? mediaRecorder.stop() : null
 			
@@ -311,6 +319,7 @@ window.onkeyup=function(e){
 			a.click();
 		}
 
+				
 		setInterval(()=>{
 
 			if(btplay){
@@ -319,29 +328,45 @@ window.onkeyup=function(e){
 				risca(timeline.value)
 			}
 
-			if(!audio.paused){
-				timeline.value = audio.currentTime*timeline.max/audio.duration
-				mouse.move(mouse.history[timeline.value].x,mouse.history[timeline.value].y)
-				risca(timeline.value)
-			}
+			try{
+				if(!audio.paused){
+					timeline.value = audio.currentTime*timeline.max/audio.duration
+					mouse.move(mouse.history[timeline.value].x,mouse.history[timeline.value].y)
+					risca(timeline.value)
+				}
+			}catch(e){}
+			
 
 
 		},0)
 
 		
 		//100 para trás
-		function risca(n){
-			try{
-				for(k=0;k<50;k++){
-					if(mouse.history[n-k].b){
-						line2(mouse.history[n-k].x,mouse.history[n-k].y,mouse.history[n-k+1].x,mouse.history[n-k+1].y)
-						// cor = cores[mouse.history[n-k].c]
-						// line(mouse.history[n-k].x,mouse.history[n-k].y,mouse.history[n-k+1].x,mouse.history[n-k+1].y)
 
-					}
-				}
-			}catch(e){}
+		a = 0
+
+		function risca(e){
+
+			console.log(e)
+
+			try{
+				x0 = mouse.x
+				y0 = mouse.y
+			}catch(e){
+				x0 = 0
+				y0 = 0
+			}
+
+			mouse.x = mouse.history[e].x
+			mouse.y = mouse.history[e].y
+			mouse.b = mouse.history[e].b
+
+
+			if(mouse.history[e].b)
+				line2(x0,y0,mouse.x,mouse.y)
+
 		}
+		
 
 		// @conteudo@
 		//pega o conteudo que tá entre as arrobas link 
