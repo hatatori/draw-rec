@@ -332,7 +332,7 @@ window.onkeyup=function(e){
 		//100 para trás
 		function risca(n){
 			try{
-				for(k=0;k<1;k++){
+				for(k=0;k<50;k++){
 					if(mouse.history[n-k].b){
 						line2(mouse.history[n-k].x,mouse.history[n-k].y,mouse.history[n-k+1].x,mouse.history[n-k+1].y)
 						// cor = cores[mouse.history[n-k].c]
