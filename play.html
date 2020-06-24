@@ -31,10 +31,15 @@
 
 	<!-- <input id="timeline" type="range" name="" min=0 max=0 onclick="sincroniza(this.value)" onmousemove="desfazerTempo(this.value); sincroniza(this.value)" onchange="desfazerTempo(this.value)" onmouseup="sincroniza2()" > -->
 
-	<input id="timeline" type="range" name="" min=0 max=0 
+	<!-- <input id="timeline" type="range" name="" min=0 max=0 
 	onclick="desfazerTempo(this.value); sincroniza(this.value);"
 	onmousemove="desfazerTempo(this.value); sincroniza(this.value);" 
 	onchange="desfazerTempo(this.value); sincroniza(this.value);" 
+	> -->
+
+	<input id="timeline" type="range" name="" min=0 max=0 
+	onclick="desfazerTempo(this.value); sincroniza(this.value);"
+	onmousemove="desfazerTempo(this.value); sincroniza(this.value);"
 	>
 
 	
@@ -72,7 +77,7 @@
 
 				if(audio.paused == true){
 					audio.play()
-					console.log("ok")
+					// 
 				}
 			}else{
 				btplay = 0
@@ -82,7 +87,7 @@
 
 	//cor tamanho 
 	cor = 'black'
-	tamanho_pincel = 2
+	tamanho_pincel = 1
 
 	// cores
 	numero_cor = 0
@@ -92,20 +97,53 @@
 	// quadro
 	ctx = myCanvas.getContext('2d')
 	ctx.fillStyle = cores[3];
-	console.log(ctx)
+	
 	ctx.fillRect(0, 0, 1920, 1080); //x y w h
 
-	// circulo
-	function line(x0,y0,x1,y1){ 
+	// linha
+	// function line(x0,y0,x1,y1){ 
+	// 	ctx.beginPath();
+	// 	ctx.strokeStyle = cor
+	// 	ctx.moveTo(x0, y0);
+	// 	ctx.lineTo(x1, y1);
+	// 	ctx.lineWidth = tamanho_pincel
+	// 	ctx.stroke();
+	// 	ctx.closePath();
+	// }
 
-		ctx.beginPath();
-		ctx.strokeStyle = cor
-		ctx.moveTo(x0, y0);
-		ctx.lineTo(x1, y1);
-		ctx.lineWidth = tamanho_pincel
-		ctx.stroke();
-		ctx.closePath();
+	function line(x0,y0,x1,y1){
+
+		dx = x1-x0
+		dy = y1-y0
+
+		m = dy/dx
+		
+		distance = dx == 0 ? Math.abs(dy) : Math.abs(dx)
+
+		for(i=0;i<distance;i+=0.1){
+
+			sx = parseInt(Math.round( dx>0 ? x0+i : x0-i ))
+			sy = parseInt(Math.round( dx>0 ? y0+i*m : y0+i*m*-1 ))
+			
+			pixel(sx,sy)
+
+			if(dx==0) pixel(x0,y0 += dy > 0 ? 0.1 : -0.1) ;
+		}
 	}
+
+
+	x0 = 50
+	y0 = 100
+	x1 = 50
+	y1 = 150
+
+	cor='black'
+	line(x0,y0,x1,y1)
+
+	cor='red'
+	pixel(x0,y0)
+	cor='red'
+	pixel(x1,y1)
 
 	function lineColor(num){cor = cores[num]}
 	function lineSize(tamanho_pincel){tamanho_pincel = tamanho_pincel}
@@ -260,7 +298,7 @@ window.onkeyup=function(e){
 			
 			numero = typeof(numero) == 'undefined' || numero == 0 ? 1 : 0
 
-			console.log(numero)
+			
 
 			
 			numero == 0 ? mediaRecorder.stop() : null
@@ -337,18 +375,48 @@ window.onkeyup=function(e){
 
 		// atualização
 		setInterval(function(){
+
 			if(audio.currentTime == audio.duration){
 				audio.currentTime = 0
 				audio.pause()
 			}
 
 			timeline.value = audio.currentTime*timeline.max/audio.duration
-			
-			desfazerTempo(timeline.value)
-
-			// mouse.pos(timeline.value)
-
+			mouse.move(mouse.history[timeline.value].x,mouse.history[timeline.value].y)
+			risca(timeline.value)
 		},0)
+
+		
+		anterior = {}
+		nume = 0
+
+		function risca(n){
+			try{
+				for(k=0;k<100;k++){
+					if(mouse.history[n-k].b)
+					line(mouse.history[n-k].x,mouse.history[n-k].y,mouse.history[n-k+1].x,mouse.history[n-k+1].y)
+					// line(mouse.history[n-val-1].x,mouse.history[n-val-1].y,mouse.history[n-val].x,mouse.history[n-val].y)
+				}
+			}catch(e){}
+
+
+			// for(i=0;i<300;i++){
+			// 	try{
+
+			// 		// dx = mouse.history[n-i-1].x != mouse.history[n-i-1]
+			// 		// dy = mouse.history[n-i].x != mouse.history[n-i].y
+
+			// 		// if(mouse.history[n-i-1].b && !(dx && dy)){
+			// 		// 	line(mouse.history[n-i-1].x,mouse.history[n-i-1].y,mouse.history[n-i].x,mouse.history[n-i].y)
+			// 		// }
+
+			// 		// pixel(timeline.value-i)
+
+			// 	}catch(e){}
+			// }
+
+
+		}
 
 
 
