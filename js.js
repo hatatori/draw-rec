@@ -1,3 +1,7 @@
+// velocidade do setInterval
+seg = (1*1000)/60
+// seg = 1*1000
+
 //escolher com audio ou sem audio
 
 escolha = document.querySelectorAll("input[name='esc']:checked")[0].value
@@ -19,12 +23,12 @@ y = 0
 
 	// cores
 	numero_cor = 0
-	cores = ['black','#2980b9','orangered','white'] //black blue orangered
+	cores = ['black','#2980b9','orangered','#ddd','rgba(0, 0, 0, 1)'] //black blue orangered
 
 
 	// quadro
 	ctx = myCanvas.getContext('2d')
-	ctx.fillStyle = cores[3];
+	ctx.fillStyle = "white";
 	
 	ctx.fillRect(0, 0, 1920, 1080); //x y w h
 
@@ -90,12 +94,12 @@ y = 0
 				try{
 					cor = cores[this.history[n].c]
 
-					// line(this.history[n].x,this.history[n].y,this.history[n-1].x,this.history[n-1].y)
+					line(this.history[n].x,this.history[n].y,this.history[n-1].x,this.history[n-1].y)
 					
-					ctx.beginPath();
-					ctx.moveTo(this.history[n].x,this.history[n].y);
-					ctx.lineTo(this.history[n-1].x,this.history[n-1].y);
-					ctx.stroke();
+					// ctx.beginPath();
+					// ctx.moveTo(this.history[n].x,this.history[n].y);
+					// ctx.lineTo(this.history[n-1].x,this.history[n-1].y);
+					// ctx.stroke();
 
 				}
 				catch(e){}
@@ -134,12 +138,17 @@ function desfazerTempo2(tempo){
 // gravar o mouse
 flag = false
 
+
+duracao = 0
+a = 0
+
 function recordMouse(flag){
 	if(flag){
 		s = setInterval(e=>{
 			mouse.add(mouse.x, mouse.y, mouse.b, numero_cor)
 			timeline.max = mouse.history.length-1
-		},0)
+			duracao = ((a++)/60).toFixed(2)
+		},seg)
 	}else{
 		clearInterval(s)
 	}
@@ -148,8 +157,24 @@ function recordMouse(flag){
 
 var drag = false
 
-myCanvas.onmousedown=function(e){ drag = true ; console.log(drag) }
-myCanvas.onmouseup=function(e){ drag = false ; console.log(drag) }
+window.onmousedown=function(e){ drag = false ; }
+window.onmouseup=function(e){ drag = false ; }
+
+// timeline
+timeline.onmouseup=function(e){ 
+	desfazerTempo(this.value)
+	sincroniza(this.value)
+		// audio.currentTime = parseInt(timeline.value) * audio.duration / parseInt(timeline.max)
+	}
+
+	timeline.onmousemove=function(e){ 
+		if(mouse.b)
+			Clear()
+	// if(mouse.b){
+	// 	desfazerTempo(this.value)
+	// }
+	
+}
 
 myCanvas.onmousemove=function(e){
 
@@ -166,13 +191,14 @@ myCanvas.onmousemove=function(e){
 	mouse.b = e.buttons
 
 
-	if(drag)
-		line2(x0,y0,mouse.x,mouse.y)
+	if(mouse.b && btplay == 0)
+		line(x0,y0,mouse.x,mouse.y)
 
-	// console.log(x0+" - "+y0+" : "+mouse.x+" - "+mouse.y)
 }	
 
 window.onclick=function(){pixel(mouse.x,mouse.y)}
+
+n = 0
 
 window.onkeyup=function(e){
 
@@ -180,20 +206,23 @@ window.onkeyup=function(e){
 	if(e.key == "2") recordMouse(false); 
 
 
-	if(e.key == "+") tamanho_pincel++;
-	if(e.key == "-") tamanho_pincel--;
+	if(e.key == "[") tamanho_pincel++ ; console.log(tamanho_pincel);
+	if(e.key == "]") tamanho_pincel-- ; console.log(tamanho_pincel);
 	if(e.key == "\'") btplay = (btplay==1) ? 0 :  1;
 	if(e.key == " ") btplay = (btplay==1) ? 0 :  1;
 	if(e.key == " ") audio.paused = (!audio.paused) ? audio.pause() :  audio.play();
 
 
 	switch(e.key){
-		case 'z': cor="black" ; break
-		case 'x': cor="orangered" ; break
-		case 'c': cor="blue" ; break
-		case 'v': cor="green" ; break
+		case '1': n=0 ; break
+		case '2': n=1 ; break
+		case '3': n=2 ; break
+		case '4': n=3 ; break
+		case '5': n=4 ; break
 		case '*': desfazerTempo2(timeline.value)
 	}
+
+	cor=cores[n]
 
 	// cor = cores[numero_cor]; $$('.quadrado')[numero_cor].click()
 
@@ -205,6 +234,9 @@ window.onkeyup=function(e){
 		//carrega arquivo
 		file = window.location.hash.substring(1)
 		file = file.split("#")[0]	
+
+		// if(file.match("@")[0])
+		// 	file = file.slice(0,file.indexOf("@"))
 
 		if(file!=""){
 			audio.src = file+".wma"
@@ -264,14 +296,17 @@ window.onkeyup=function(e){
 
 						audio.style.width=600
 						audio.setAttribute("controls",1)
-
+						audio.src = audio_url
+						
 						bloco.appendChild(audio)
 
 						if(!audio.paused)
 							audio.play()
 
-						videoplay(1)
+						btplay.click()
 
+						recordMouse(false)
+						Clear()
 					})
 				})
 			}
@@ -285,23 +320,18 @@ window.onkeyup=function(e){
 			audio.currentTime=9000
 			audio.play()
 			fim++
+			// audio.currentTime=0
+			// timeline.value=0
+			// audio.pause()
 		}
 
 		function sincroniza(valor){ 
-
 			aux = audio.paused
-
-			if(aux == true){
-				audio.pause()
-			}
-
-			if(mouse.b){
-				audio.currentTime = parseInt(valor) * audio.duration / parseInt(timeline.max) 
-			}
-
+			if(aux == true){ audio.pause() }
+				audio.currentTime = parseInt(valor) * duracao / parseInt(timeline.max)
 		}
 
-		function sincroniza2(){ audio.currentTime = parseInt(valor) * audio.duration / parseInt(timeline.max) }
+		function sincroniza2(){ audio.currentTime = parseInt(valor) * duracao / parseInt(timeline.max) }
 
 		//baixa
 		function fileDown(){
@@ -319,39 +349,43 @@ window.onkeyup=function(e){
 			a.click();
 		}
 
-				
+
+
 		setInterval(()=>{
 
 			if(btplay){
 				timeline.value++
-				// mouse.move(mouse.history[timeline.value].x,mouse.history[timeline.value].y)
+				mouse.move(mouse.history[timeline.value].x,mouse.history[timeline.value].y)
 				risca(timeline.value)
+				if(timeline.value == timeline.max-1){
+					audio.pause()
+					btplay = 0
+				}
 			}
 
 			try{
 				if(!audio.paused){
-					timeline.value = audio.currentTime*timeline.max/audio.duration
-					mouse.move(mouse.history[timeline.value].x,mouse.history[timeline.value].y)
-					risca(timeline.value)
+					// timeline.value = audio.currentTime*timeline.max/audio.duration
+					// mouse.move(mouse.history[timeline.value].x,mouse.history[timeline.value].y)
+					// risca(timeline.value)
 				}
 			}catch(e){}
 			
 
 
-		},0)
+		},seg/60)
 
 		
 		//100 para trás
 
 		a = 0
 
+
 		function risca(e){
-
-			console.log(e)
-
+			// Clear()
 			try{
-				x0 = mouse.x
-				y0 = mouse.y
+				x0 = mouse.history[e].x
+				y0 = mouse.history[e].y
 			}catch(e){
 				x0 = 0
 				y0 = 0
@@ -359,14 +393,17 @@ window.onkeyup=function(e){
 
 			mouse.x = mouse.history[e].x
 			mouse.y = mouse.history[e].y
-			mouse.b = mouse.history[e].b
+			// mouse.b = mouse.history[e].b
 
 
-			if(mouse.history[e].b)
-				line2(x0,y0,mouse.x,mouse.y)
+			if(mouse.history[e].b){
+				cor = cores[mouse.history[e].c]
+				line(mouse.history[e-1].x,mouse.history[e-1].y,mouse.history[e].x,mouse.history[e].y)
+			}
+				// line2(x0,y0,mouse.x,mouse.y)
 
-		}
-		
+			}
+
 
 		// @conteudo@
 		//pega o conteudo que tá entre as arrobas link 
@@ -374,10 +411,11 @@ window.onkeyup=function(e){
 		try{
 			link = window.location.href
 			msg = decodeURI(link.match(/@(.+)@/i)[1])
-			questao.innerHTML = msg
+			qquestao.innerHTML = msg.replace(/\\n/g,"<br>")
 		}catch(e){}
 
 
+		function ft(x){
+			return x*887/2.94
+		}
 
-
-		
