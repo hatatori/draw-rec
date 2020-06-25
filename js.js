@@ -313,18 +313,6 @@ window.onkeyup=function(e){
 		}		
 
 
-
-		//consegue a duração do áudio
-		fim = 0
-		if(fim==0){
-			audio.currentTime=9000
-			audio.play()
-			fim++
-			// audio.currentTime=0
-			// timeline.value=0
-			// audio.pause()
-		}
-
 		function sincroniza(valor){ 
 			aux = audio.paused
 			if(aux == true){ audio.pause() }
@@ -373,7 +361,7 @@ window.onkeyup=function(e){
 			
 
 
-		},seg/60)
+		},seg)
 
 		
 		//100 para trás
