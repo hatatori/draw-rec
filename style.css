@@ -1,0 +1,35 @@
+	*{
+		/*cursor: url('pencil.svg'), auto*/;transition: 0.05s;	
+		/*width: 100%;*/
+		margin: 0;
+		padding: 0;
+		outline: none;
+		font-family: monospace;
+		cursor: url(circle2.png) 4.5 4.5, auto;
+
+	}
+	body{text-align: center;}
+	#cursor{transition: 0.05s;}
+	#timeline{width: 100%}
+	.quadrado{width: 20;height: 20;margin: 5;display: inline-block; border: 1px solid black }
+
+	input[type="radio"]{display: none}
+	input[type="radio"]:checked+div{border: solid 1px black; margin: 2;padding: 2}
+
+	/*input[type="range"]{position: fixed;bottom: 0%;left: 0px;z-index: 1}*/
+	.flex{display: flex;width: 100%;position: fixed;z-index: 2;bottom: 0}
+	.flex button{margin: 5;padding: 5}
+	
+	audio{display: none}
+
+	.estilo1:hover{cursor: pointer;}
+	.estilo1 input:checked+p{background-color: black;color: black;color: white;padding: 10}
+
+	.iblock{display: inline-block;}
+
+	#qquestao{
+		margin:10;
+		text-align: left;
+	}
+
+

@@ -1,43 +1,40 @@
-<style>
-	*{
-		/*cursor: url('pencil.svg'), auto;transition: 0.05s;	*/
-		/*width: 100%;*/
-		margin: 0;
-		padding: 0;
+<link rel="stylesheet" type="text/css" href="style.css">
+<label class="estilo1"><input type="radio" name="esc" checked="" value="0"><p class='iblock'>sem audio</p></label>
+<label class="estilo1"><input type="radio" name="esc" value="1"><p class='iblock'>com audio</p></label>
 
-		outline: none
-	}
-	body{text-align: center;}
-	#cursor{transition: 0.05s;}
-	#timeline{width: 100%}
-	.quadrado{width: 20;height: 20;margin: 5;display: inline-block; border: 1px solid black }
-
-	input[type="radio"]{display: none}
-	input[type="radio"]:checked+div{border: solid 1px black; margin: 2;padding: 2}
-	.flex{display: flex;width: 100%;position: fixed;z-index: 2;bottom: 0}
-	.flex button{margin: 5;padding: 5}
-	audio{display: none}
-</style>
-
+<div id="questao"></div>
 
 <span class='flex' id="bloco">
+
+	<!-- <button onclick="gravarAudio()" id="btgravaraudio">gravar</button> -->
 	
+	<!-- <button onclick="videoplay(1)">play</button>
+		<button onclick="videoplay(0)">pause</button> -->
 
-	<button id="btplay" onclick="audio.play()">play</button>
-	<button id="btpause" onclick="audio.pause()">pause</button>
+		<button id="btplay" onclick="audio.play();videoplay(1);">play</button>
+		<button id="btpause" onclick="audio.pause();videoplay(0);">pause</button>
 
-	<audio id="audio" src=""></audio>
+		<!-- <button onclick="Clear()">limpar</button> -->
+		<!-- <button onclick="fileDown()">Finaliza</button> -->
+		<audio id="audio" src=""></audio>
 
 
-	<input id="timeline" type="range" name="" min=0 max=0 
-	onclick="desfazerTempo(this.value); sincroniza(this.value);"
-	onmousemove="sincroniza(this.value);desfazerTempo(this.value)"
-	onmouseup="desfazerTempo(this.value)"
-	>
+
+		<input id="timeline" type="range" name="" min=0 max=0  value=0>
+
+<!-- 	<label><input type="radio" name="cr" checked><div class="quadrado" style="background-color: black" onclick="lineColor(0)"></div></label>
+
+	<label><input type="radio" name="cr"><div class="quadrado" style="background-color: #2980b9" onclick="lineColor(1)"></div></label>
+
+	<label><input type="radio" name="cr"><div class="quadrado" style="background-color: orangered" onclick="lineColor(2)"></div></label>
+
+	<label><input type="radio" name="cr"><div class="quadrado" onclick="lineColor(3)"></div></label> -->
 
 </span>
 
 <br>
+
+<div id="qquestao"></div>
 
 <div style="position: relative;">
 	<img id="cursor" src='cursor2.svg' style="position:absolute; width: 45">
