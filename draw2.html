@@ -1,0 +1,262 @@
+<style>
+
+	*{
+		padding: 0;
+		margin: 0
+	}
+
+	body{
+		text-align: center;
+	}
+
+	#tela{
+		position: relative;
+		width: 800;
+		height: 600;
+		margin:auto;
+	}
+
+	#cursor{
+		position: absolute;
+	}
+
+	svg{
+		position: relative;
+	}
+</style>
+
+<audio id='aud' src='q.wma' controls></audio>
+
+<br>
+<div id="tela">
+	<img id="cursor" src='cursor.svg' width="40">
+	<svg id='svg' width="800" height="600" style="border:solid 1px black;">
+		<polyline id="pol" points="" style="fill:none;stroke:black;stroke-width:2" />
+	</svg>
+</div>
+<br>
+
+<input type="range" name="" id="ran" min=0 max=100 style="width: 500">
+
+<br>
+<br>
+<button style="padding: 5" id="sav">Salvar</button>
+
+
+<script>
+
+	rec = false
+	play = false
+	qt = []
+	
+	fps = 60
+	fps = 1*1000/fps
+
+	tempo = 0
+
+	mouse = {}
+	mouse.history = {}
+	
+
+	Poly = () => pol.cloneNode(true)
+	pk = Poly()
+	pol.remove()
+
+	svg.onmousedown = () =>	{
+		pos = ""
+		po = pk.cloneNode(true)
+		svg.appendChild(po)
+	}
+
+	svg.onmouseup = () => po.removeAttribute("id")
+	
+	line = (x0,y0,x1,y1) => {
+		p = pk.cloneNode(true)
+		p.setAttribute("points",x0+","+y0+" "+x1+","+y1)
+		svg.appendChild(p)
+	}
+
+	svg.onmousemove=function(e){
+
+		a = 1
+
+		x = e.offsetX
+		y = e.offsetY
+
+		mouse.x = x
+		mouse.y = y
+		mouse.b = e.buttons
+		cor = mouse.x+','+mouse.y
+
+		if(mouse.b){
+			pos = pos+" "+cor
+			po.setAttribute("points",pos)
+		}
+
+		if(rec && a)
+			mouse.history[tempo] = mouse.x+","+mouse.y+","+mouse.b
+		
+		a = 0		
+	}
+	
+	cur = (x,y) => {
+		cursor.style.left = x
+		cursor.style.top = y
+	}
+	
+	record = () => {
+		tempo = 0
+		rec = true
+	}
+
+	stop = () => {
+		rec = false
+	}
+
+	playy = () => {
+		tempo = 0
+		play = true
+	}
+
+	Clean = () => svg.innerHTML=""
+
+
+	function loadFile(){
+		arquivo = window.location.href.split("#").pop()
+		fetch(arquivo+".txt").then(e=>{
+			return e.text()
+		}).then(e=>{
+			mouse.history = JSON.parse(e)
+		})
+	}loadFile()
+
+	
+	window.onkeyup = e => {
+		if(e.key == 'q') record() ;
+		if(e.key == 'w') stop() ;
+		if(e.key == 'c') Clean() ;
+		if(e.key == 'e') {
+			Clean();
+			playy()
+		} 
+	}
+
+	function A(){
+		pos = ""
+		po = pk.cloneNode(true)
+		svg.appendChild(po)
+	}
+
+	function add(x,y){
+		pos = pos+" "+x+","+y
+		po.setAttribute("points",pos)
+	}
+
+	function C(){
+		qt = []
+
+		if(typeof(po) == 'object'){
+			po.removeAttribute("id")
+			po.removeAttribute("c")
+			po = undefined
+			po = 2
+		}
+
+	}
+
+	setInterval(function(){
+
+		if(play) desenha(tempo)
+
+			tempo++
+
+		a = 1
+
+
+	},fps)
+
+	function desenha(tempo){
+		mo = mouse.history[tempo]
+
+		if(mo != undefined){
+
+			moo = mo.split(",")
+			mx = moo[0]
+			my = moo[1]
+			mb = moo[2]
+
+			cur(mx-18,my-9)
+
+			if(mb == 1){
+
+				qt.push(1)
+
+				if(qt.length == 1)
+					A();
+
+
+				add(mx,my)
+
+			}
+
+			if(mb == 0)
+				C()
+
+		}
+	}
+
+	function linkToHistory(){
+		filename = window.location.href.split("#").pop()
+
+		fetch(filename+".txt").then(e=>{
+			return e.text()
+		}).then(e=>{
+			k = JSON.parse(e)
+			mouse.history = k
+		})
+	}
+
+	
+
+
+
+	save = function(filename, data) {
+		var blob = new Blob([data], {type: 'text/csv'});
+		if(window.navigator.msSaveOrOpenBlob) {
+			window.navigator.msSaveBlob(blob, filename);
+		}
+		else{
+			var elem = window.document.createElement('a');
+			elem.href = window.URL.createObjectURL(blob);
+			elem.download = filename;        
+			document.body.appendChild(elem);
+			elem.click();        
+			document.body.removeChild(elem);
+		}
+	}
+
+	sav.onclick=function(){
+		save("nome",JSON.stringify(mouse.history))
+	}
+
+
+	//tocar no tempo
+
+	function playLocation(t){
+		Clean()
+		tempo = t
+		quantidade = Object.keys(mouse.history).length
+		for(i=0;i<t;i++){
+			desenha(i)
+		}
+	}
+
+	ran.onmousemove=function(e){
+		if(e.which){
+			valor = parseInt(this.value)
+			q = Object.keys(mouse.history).length
+			playLocation(valor*q/100)
+		}
+	}
+
+</script>
