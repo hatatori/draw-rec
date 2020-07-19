@@ -1,1 +1,1 @@
-# https://hatatori.github.io/draw-rec/draw2.html#test
+# https://hatatori.github.io/draw-rec/play.html#test
