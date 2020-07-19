@@ -1,0 +1,400 @@
+<style>
+
+	*{
+		padding: 0;
+		margin: 0
+	}
+
+	body{
+		text-align: center;
+	}
+
+	#tela{
+		position: relative;
+		width: 1920;
+		height: 1080;
+		margin:auto;
+	}
+
+	#cursor{
+		position: absolute;
+		z-index: 3;
+	}
+
+	svg{
+		position: relative;
+	}
+</style>
+
+<audio id='aud' src='q.wma' controls></audio>
+
+<br>
+<div id="tela">
+	<img id="cursor" src='cursor.svg' width="40">
+	<svg id='svg' width="1920" height="1080" style="border:solid 1px black;">
+		<polyline id="pol" points="" style="fill:none;stroke:black;stroke-width:2" />
+	</svg>
+</div>
+<br>
+<button style="padding: 5" id="btaudio">gravar</button>
+<button style="padding: 5" id="sav">Salvar txt</button>
+<button style="padding: 5" id="btplaypau">play</button><br>
+<input type="range" name="" id="ran" min=0 max=100 style="width: 500">
+
+<br>
+<br>
+
+
+
+<script>
+
+	rec = false
+	play = false
+	qt = []
+	//preto laranja azul
+	cores = ["#000000","#d35400","#2980b9"]
+	numero_cor = 0
+	
+	fps = 60
+	fps = 1*1000/fps
+
+	tempo = 0
+
+	mouse = {}
+	mouse.history = {}
+	
+
+	Poly = () => pol.cloneNode(true)
+	pk = Poly()
+	pol.remove()
+
+	svg.onmousedown = () =>	{
+		pos = ""
+		pk.style.stroke = cores[numero_cor]
+		po = pk.cloneNode(true)
+		svg.appendChild(po)
+	}
+
+	svg.onmouseup = () => po.removeAttribute("id")
+	
+	line = (x0,y0,x1,y1) => {
+		p = pk.cloneNode(true)
+		p.setAttribute("points",x0+","+y0+" "+x1+","+y1)
+		svg.appendChild(p)
+	}
+
+	svg.onmousemove=function(e){
+
+		a = 1
+
+		x = e.offsetX
+		y = e.offsetY
+
+		mouse.x = x
+		mouse.y = y
+		mouse.b = e.buttons
+		mouse.c = numero_cor
+		cor = mouse.x+','+mouse.y
+
+		if(mouse.b){
+			pos = pos+" "+cor
+			po.setAttribute("points",pos)
+		}
+
+		if(rec && a){
+			mouse.history[tempo] = mouse.x+","+mouse.y+","+mouse.b+","+mouse.c
+		}
+		
+		a = 0		
+	}
+	
+	cur = (x,y) => {
+		cursor.style.left = x
+		cursor.style.top = y
+	}
+	
+	record = () => {
+		tempo = 0
+		rec = true
+	}
+
+	stopp = () => {
+		rec = false
+	}
+
+	playy = () => {
+		tempo = 0
+		play = true
+	}
+
+	Clean = () => svg.innerHTML=""
+
+
+	function loadFile(){
+		arquivo = window.location.href.split("#").pop()
+		fetch(arquivo+".txt").then(e=>{
+			return e.text()
+		}).then(e=>{
+			mouse.history = JSON.parse(e)
+		})
+	}
+	// loadFile()
+
+	
+	window.onkeyup = e => {
+		// numero_cor
+		if(e.key == 'a') numero_cor = 0;
+		if(e.key == 's') numero_cor = 1;
+		if(e.key == 'd') numero_cor = 2;
+
+		if(e.key == 'q') record() ;
+		if(e.key == 'w') stopp() ;
+		if(e.key == 'c') Clean() ;
+		if(e.key == 'e') {
+			Clean();
+			playy()
+		} 
+	}
+
+	function A(){
+		pos = ""
+		po = pk.cloneNode(true)
+		svg.appendChild(po)
+	}
+
+	function add(x,y,c){
+		pos = pos+" "+x+","+y
+		po.style.stroke = cores[c]
+		po.setAttribute("points",pos)
+	}
+
+	function C(){
+		qt = []
+
+		if(typeof(po) == 'object'){
+			po.removeAttribute("id")
+			po.removeAttribute("c")
+			po = undefined
+			po = 2
+		}
+
+	}
+
+	setInterval(function(){
+
+		if(play){
+			desenha(tempo)
+			playLocationRange(tempo)
+		}
+
+		if(tempo == Object.keys(mouse.history).pop()){
+			btplaypau.innerHTML='play'
+			play = false
+		}
+
+
+		// if(!play)		
+		// 	tempo = tempo-1
+		
+
+		tempo++
+
+		a = 1
+
+
+	},fps)
+
+	function desenha(te){
+		mo = mouse.history[te]
+
+		if(mo != undefined){
+
+			moo = mo.split(",")
+			mx = moo[0]
+			my = moo[1]
+			mb = moo[2]
+			mc = moo[3]
+
+			cur(mx-18,my-9)
+
+			if(mb == 1){
+
+				qt.push(1)
+
+				if(qt.length == 1)
+					A();
+
+
+				add(mx,my,mc)
+
+			}
+
+			if(mb == 0)
+				C()
+
+		}
+	}
+
+	function linkToHistory(){
+		filename = window.location.href.split("#").pop()
+
+		fetch(filename+".txt").then(e=>{
+			return e.text()
+		}).then(e=>{
+			k = JSON.parse(e)
+			mouse.history = k
+		})
+	}
+
+	
+
+
+
+	save = function(filename, data) {
+		var blob = new Blob([data], {type: 'text/csv'});
+		if(window.navigator.msSaveOrOpenBlob) {
+			window.navigator.msSaveBlob(blob, filename);
+		}
+		else{
+			var elem = window.document.createElement('a');
+			elem.href = window.URL.createObjectURL(blob);
+			elem.download = filename;        
+			document.body.appendChild(elem);
+			elem.click();        
+			document.body.removeChild(elem);
+		}
+	}
+
+	saveaudio = function(filename, data) {
+		var blob = new Blob([data], {type: 'audio/mpeg'});
+		if(window.navigator.msSaveOrOpenBlob) {
+			window.navigator.msSaveBlob(blob, filename);
+		}
+		else{
+			var elem = window.document.createElement('a');
+			elem.href = window.URL.createObjectURL(blob);
+			elem.download = filename;        
+			document.body.appendChild(elem);
+			elem.click();        
+			document.body.removeChild(elem);
+		}
+	}
+
+	sav.onclick=function(){
+		save("nome",JSON.stringify(mouse.history))
+	}
+
+
+	//tocar no tempo
+
+	function playLocation(t){
+		Clean()
+		tempo = t
+		quantidade = Object.keys(mouse.history).length
+		for(i=0;i<t;i++)
+			desenha(i)
+	}
+
+	function playLocationRange(t){
+		q = Object.keys(mouse.history).length
+		ran.value = parseInt(t*100/q)
+	}
+
+	ran.onmousemove=function(e){
+		if(e.which){
+			valor = parseInt(this.value)
+			q = Object.keys(mouse.history).length
+			playLocation(valor*q/100)
+		}
+	}
+
+	ran.onclick=function(e){
+		tempo2 = parseInt(tempo)
+		playLocation(tempo2)
+	}
+
+
+	ran.onmouseup=function(e){
+		tempo2 = parseInt(tempo)
+		
+		playLocation(tempo2)
+
+	}
+
+	btplaypau.onclick=function(){
+
+		conteudo = this.innerHTML
+
+		if(conteudo == "play"){
+			play = true
+			this.innerHTML = "pause"
+		}else{
+			this.innerHTML = "play"
+			play = false
+			tempo2 = tempo
+			// tempo = tempo2
+		}
+
+		try{tempo = tempo2}catch(e){}
+		
+
+	}
+
+	btaudio.onclick=function(){
+		if(this.innerHTML == "gravar"){
+			this.innerHTML = "parar"
+			recordAudioStart()
+		}else{
+			this.innerHTML = "gravar"
+			recordAudioStop	()
+			console.log('ok')
+		}
+	}
+
+	//gravação
+
+	// iniciar gravação
+	function recordAudioStart(){
+
+		record()
+
+		navigator.mediaDevices.getUserMedia({audio:true})
+
+		.then(stream => {
+
+			mediaRecorder = new MediaRecorder(stream)
+			mediaRecorder.start()
+			chunk = []
+
+			mediaRecorder.addEventListener("dataavailable",e=>{
+				chunk.push(e.data)
+			})
+
+			mediaRecorder.addEventListener("stop",e => {
+				blob = new Blob(chunk)
+				audio_url = URL.createObjectURL(blob)
+				// audio = new Audio(audio_url)
+				console.log(aud)
+				aud.src = audio_url
+				console.log(aud)
+			})
+
+		})
+
+	}
+
+	function recordAudioStop(){
+		mediaRecorder.stop()
+		stopp()
+	}
+
+
+	// baixarAudio(){
+	// 	fetch('blob:http://localhost/217a3334-6375-4db9-b825-2a5edc5bde14').then(e=>{
+	// 		return e.text()
+	// 	}).then(e=>{
+	// 		saveaudio(e)
+	// 	})
+	// }
+
+</script>
