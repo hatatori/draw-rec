@@ -26,7 +26,6 @@
 	}
 </style>
 
-<audio id='aud' src='q.wma' controls></audio>
 
 <br>
 <div id="tela">
@@ -39,7 +38,8 @@
 <button style="padding: 5" id="btaudio">gravar</button>
 <button style="padding: 5" id="sav">Salvar txt</button>
 <button style="padding: 5" id="btplaypau">play</button><br>
-<input type="range" name="" id="ran" min=0 max=100 style="width: 500">
+<input type="range" name="" id="ran" min=0 max=100 style="width: 500"><br>
+<audio id='aud' src='test.wma' controls></audio>
 
 <br>
 <br>
@@ -138,7 +138,31 @@
 			mouse.history = JSON.parse(e)
 		})
 	}
-	// loadFile()
+
+
+	if(window.location.href.match(/#/g))
+		loadFile()
+
+
+	tk = 1
+	function getDuration(){
+		try{
+			if(tk == 1)
+				aud.currentTime=99999
+			tk++
+
+			duration = aud.duration
+
+			return duration
+		}catch(e){
+
+		}
+	}
+	
+	getDuration()
+	getDuration()
+
+	duration = getDuration()
 
 	
 	window.onkeyup = e => {
@@ -314,11 +338,12 @@
 	}
 
 
+	
+
 	ran.onmouseup=function(e){
 		tempo2 = parseInt(tempo)
-		
 		playLocation(tempo2)
-
+		AdjustTimeRanAudio()
 	}
 
 	btplaypau.onclick=function(){
@@ -328,11 +353,18 @@
 		if(conteudo == "play"){
 			play = true
 			this.innerHTML = "pause"
+
+			try{aud.play()}catch(e){}
+
 		}else{
+			
 			this.innerHTML = "play"
+			
 			play = false
 			tempo2 = tempo
-			// tempo = tempo2
+
+			try{aud.pause()}catch(e){}
+
 		}
 
 		try{tempo = tempo2}catch(e){}
@@ -376,6 +408,7 @@
 				// audio = new Audio(audio_url)
 				console.log(aud)
 				aud.src = audio_url
+				aud.preload = 'true'
 				console.log(aud)
 			})
 
@@ -387,6 +420,15 @@
 		mediaRecorder.stop()
 		stopp()
 	}
+
+
+	duration = getDuration()
+
+	function AdjustTimeRanAudio(){
+		aud.currentTime = ran.value*getDuration()/100
+	}
+
+	// aud.currentTime = ran.value*getDuration()/100
 
 
 	// baixarAudio(){
